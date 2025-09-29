@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VWO Client-Side Debugger Test Website</title>
+    
+    <!-- Security Headers Simulation -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.vwo.com *.visualwebsiteoptimizer.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vwo.com *.visualwebsiteoptimizer.com;">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .status-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        
+        .button {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        
+        .button:hover {
+            background: #2980b9;
+        }
+        
+        .button.variant-b {
+            background: #e74c3c;
+        }
+        
+        .button.variant-b:hover {
+            background: #c0392b;
+        }
+        
+        .log-panel {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success { background: #27ae60; }
+        .status-warning { background: #f39c12; }
+        .status-error { background: #e74c3c; }
+        
+        .protection-simulation {
+            background: rgba(231, 76, 60, 0.1);
+            border: 2px solid #e74c3c;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .debug-info {
+            background: rgba(52, 152, 219, 0.1);
+            border: 2px solid #3498db;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 VWO Client-Side Debugger Test Website</h1>
+            <p>This website simulates various scenarios to test VWO client-side debugger functionality, especially for websites with protection mechanisms.</p>
+        </div>
+        
+        <div class="status-panel">
+            <h2>🚦 VWO Status Dashboard</h2>
+            <div id="vwo-status">
+                <p><span class="status-indicator status-warning"></span>Initializing VWO...</p>
+            </div>
+            <div class="debug-info">
+                <strong>Debug Information:</strong>
+                <div id="debug-info">Loading...</div>
+            </div>
+        </div>
+        
+        <div class="test-sections">
+            <div class="test-section">
+                <h3>🧪 A/B Test Elements</h3>
+                <p>These elements will be modified by VWO tests:</p>
+                <div id="ab-test-element">
+                    <h4 id="headline">Original Headline - Test Me!</h4>
+                    <button class="button" id="cta-button" onclick="trackConversion('button_click')">Original CTA Button</button>
+                    <p id="description">This is the original description text that can be modified by VWO.</p>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>🎯 Goal Tracking</h3>
+                <p>Test conversion tracking:</p>
+                <button class="button" onclick="trackConversion('primary_goal')">Track Primary Goal</button>
+                <button class="button" onclick="trackConversion('secondary_goal')">Track Secondary Goal</button>
+                <button class="button" onclick="trackConversion('custom_event', {value: 100})">Track Custom Event</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>🔒 Protection Simulation</h3>
+                <div class="protection-simulation">
+                    <p><strong>Simulated Protection Issues:</strong></p>
+                    <ul>
+                        <li>CORS restrictions</li>
+                        <li>Content Security Policy</li>
+                        <li>X-Frame-Options</li>
+                        <li>Network timeouts</li>
+                    </ul>
+                    <button class="button" onclick="simulateProtectionIssues()">Simulate Protection Issues</button>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>📊 Feature Flags</h3>
+                <p>Test feature flag functionality:</p>
+                <div id="feature-flags">
+                    <div id="feature-new-design" style="display: none;">
+                        <p>🎨 New Design Feature is ON</p>
+                    </div>
+                    <div id="feature-premium-content" style="display: none;">
+                        <p>⭐ Premium Content Feature is ON</p>
+                    </div>
+                </div>
+                <button class="button" onclick="checkFeatureFlags()">Check Feature Flags</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>🔍 Debugger Tools</h3>
+                <p>Client-side debugging utilities:</p>
+                <button class="button" onclick="getVWOInfo()">Get VWO Info</button>
+                <button class="button" onclick="getAllTests()">Get All Tests</button>
+                <button class="button" onclick="getVisitorInfo()">Get Visitor Info</button>
+                <button class="button" onclick="clearLogs()">Clear Logs</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>⚡ Performance Test</h3>
+                <p>Test loading and performance:</p>
+                <div id="performance-metrics">
+                    <p>VWO Load Time: <span id="vwo-load-time">Measuring...</span></p>
+                    <p>Page Load Time: <span id="page-load-time">Measuring...</span></p>
+                </div>
+                <button class="button" onclick="runPerformanceTest()">Run Performance Test</button>
+            </div>
+        </div>
+        
+        <div class="log-panel">
+            <h3>📝 Debug Console</h3>
+            <div id="debug-console">
+                <p>[INFO] Debug console initialized</p>
+                <p>[INFO] Waiting for VWO to load...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- VWO Async SmartCode -->
+    <script type='text/javascript'>
+        window._vwo_code = window._vwo_code || (function(){
+            var account_id = 123456, // Replace with your actual VWO account ID
+            settings_tolerance = 2000,
+            library_tolerance = 2500,
+            use_existing_jquery = false,
+            is_spa = 1,
+            hide_element = 'body',
+            /* DO NOT EDIT BELOW THIS LINE */
+            f=false,d=document,code={use_existing_jquery:function(){return use_existing_jquery;},library_tolerance:function(){return library_tolerance;},finish:function(){if(!f){f=true;var a=d.getElementById('_vis_opt_path_hides');if(a)a.parentNode.removeChild(a);}},finished:function(){return f;},load:function(a){var b=d.createElement('script');b.src=a;b.type='text/javascript';b.innerText;b.onerror=function(){_vwo_code.finish();};d.getElementsByTagName('head')[0].appendChild(b);},init:function(){
+                window.settings_timer=setTimeout(function () {_vwo_code.finish() },settings_tolerance);var a=d.createElement('style'),b=hide_element?hide_element+'{opacity:0 !important;filter:alpha(opacity=0) !important;background:none !important;}':'',h=d.getElementsByTagName('head')[0];a.setAttribute('id','_vis_opt_path_hides');a.setAttribute('type','text/css');if(a.styleSheet)a.styleSheet.cssText=b;else a.appendChild(d.createTextNode(b));h.appendChild(a);return settings_timer; }};return code; }());
+        
+        // Custom debugging and logging functions
+        const debugLog = (message, type = 'INFO') => {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] [${type}] ${message}`;
+            console.log(logEntry);
+            
+            const debugConsole = document.getElementById('debug-console');
+            if (debugConsole) {
+                const p = document.createElement('p');
+                p.textContent = logEntry;
+                p.style.color = type === 'ERROR' ? '#e74c3c' : type === 'WARN' ? '#f39c12' : '#ecf0f1';
+                debugConsole.appendChild(p);
+                debugConsole.scrollTop = debugConsole.scrollHeight;
+            }
+        };
+        
+        // Track VWO loading
+        const vwoLoadStart = performance.now();
+        
+        // VWO callback functions
+        window.VWO = window.VWO || [];
+        window.VWO.push(['onVariationApplied', function(data) {
+            debugLog(`Variation applied: Test ${data.id}, Variation ${data.variation}`, 'INFO');
+            updateVWOStatus('success', 'VWO variations applied successfully');
+        }]);
+        
+        window.VWO.push(['onReady', function() {
+            const loadTime = (performance.now() - vwoLoadStart).toFixed(2);
+            debugLog(`VWO loaded successfully in ${loadTime}ms`, 'INFO');
+            document.getElementById('vwo-load-time').textContent = `${loadTime}ms`;
+            updateVWOStatus('success', 'VWO loaded and ready');
+            checkFeatureFlags();
+        }]);
+        
+        // Update VWO status indicator
+        function updateVWOStatus(status, message) {
+            const statusElement = document.getElementById('vwo-status');
+            const indicator = status === 'success' ? 'status-success' : 
+                            status === 'warning' ? 'status-warning' : 'status-error';
+            statusElement.innerHTML = `<p><span class="status-indicator ${indicator}"></span>${message}</p>`;
+        }
+        
+        // Conversion tracking
+        function trackConversion(goalName, data = {}) {
+            debugLog(`Tracking conversion: ${goalName}`, 'INFO');
+            
+            if (window.VWO && window.VWO.push) {
+                window.VWO.push(['track.conversion', goalName, data]);
+                debugLog(`Conversion tracked successfully: ${goalName}`, 'INFO');
+            } else {
+                debugLog(`VWO not available for tracking: ${goalName}`, 'WARN');
+            }
+        }
+        
+        // Get VWO information
+        function getVWOInfo() {
+            debugLog('Getting VWO information...', 'INFO');
+            
+            const info = {
+                vwoLoaded: typeof window.VWO !== 'undefined',
+                vwoVersion: window.VWO && window.VWO.version ? window.VWO.version : 'Unknown',
+                accountId: window._vwo_code ? 'Configured' : 'Not configured',
+                visitorId: window.VWO && window.VWO.visitor ? window.VWO.visitor.uuid : 'Unknown'
+            };
+            
+            document.getElementById('debug-info').innerHTML = `
+                <strong>VWO Loaded:</strong> ${info.vwoLoaded}<br>
+                <strong>VWO Version:</strong> ${info.vwoVersion}<br>
+                <strong>Account ID:</strong> ${info.accountId}<br>
+                <strong>Visitor ID:</strong> ${info.visitorId}
+            `;
+            
+            debugLog(`VWO Info: ${JSON.stringify(info)}`, 'INFO');
+        }
+        
+        // Get all active tests
+        function getAllTests() {
+            debugLog('Getting all active tests...', 'INFO');
+            
+            if (window.VWO && window.VWO.data && window.VWO.data.pc) {
+                const tests = window.VWO.data.pc;
+                debugLog(`Active tests: ${JSON.stringify(tests)}`, 'INFO');
+            } else {
+                debugLog('No active tests found or VWO not loaded', 'WARN');
+            }
+        }
+        
+        // Get visitor information
+        function getVisitorInfo() {
+            debugLog('Getting visitor information...', 'INFO');
+            
+            if (window.VWO && window.VWO.visitor) {
+                const visitor = window.VWO.visitor;
+                debugLog(`Visitor info: ${JSON.stringify(visitor)}`, 'INFO');
+            } else {
+                debugLog('Visitor information not available', 'WARN');
+            }
+        }
+        
+        // Check feature flags
+        function checkFeatureFlags() {
+            debugLog('Checking feature flags...', 'INFO');
+            
+            // Simulate feature flag checks
+            const features = ['new-design', 'premium-content'];
+            
+            features.forEach(feature => {
+                // This would normally use VWO's feature flag API
+                const isEnabled = Math.random() > 0.5; // Random for demo
+                
+                const element = document.getElementById(`feature-${feature}`);
+                if (element) {
+                    element.style.display = isEnabled ? 'block' : 'none';
+                }
+                
+                debugLog(`Feature flag '${feature}': ${isEnabled ? 'ON' : 'OFF'}`, 'INFO');
+            });
+        }
+        
+        // Simulate protection issues
+        function simulateProtectionIssues() {
+            debugLog('Simulating protection issues...', 'WARN');
+            
+            // Simulate CORS error
+            fetch('https://example.com/api/test', { mode: 'cors' })
+                .catch(error => {
+                    debugLog(`CORS Error simulated: ${error.message}`, 'ERROR');
+                });
+            
+            // Simulate CSP violation
+            try {
+                eval('console.log("CSP test")');
+            } catch (error) {
+                debugLog(`CSP Violation simulated: ${error.message}`, 'ERROR');
+            }
+            
+            debugLog('Protection issue simulation completed', 'INFO');
+        }
+        
+        // Performance testing
+        function runPerformanceTest() {
+            debugLog('Running performance test...', 'INFO');
+            
+            const startTime = performance.now();
+            
+            // Simulate some operations
+            setTimeout(() => {
+                const endTime = performance.now();
+                const duration = (endTime - startTime).toFixed(2);
+                
+                document.getElementById('page-load-time').textContent = `${duration}ms`;
+                debugLog(`Performance test completed in ${duration}ms`, 'INFO');
+            }, 100);
+        }
+        
+        // Clear debug logs
+        function clearLogs() {
+            const debugConsole = document.getElementById('debug-console');
+            debugConsole.innerHTML = '<p>[INFO] Debug console cleared</p>';
+            debugLog('Debug console cleared', 'INFO');
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            debugLog('Page loaded, initializing VWO test environment', 'INFO');
+            
+            // Measure page load time
+            const pageLoadTime = (performance.now()).toFixed(2);
+            document.getElementById('page-load-time').textContent = `${pageLoadTime}ms`;
+            
+            // Initialize VWO
+            if (window._vwo_code) {
+                window._vwo_code.init();
+                debugLog('VWO initialization started', 'INFO');
+            } else {
+                debugLog('VWO code not found', 'ERROR');
+                updateVWOStatus('error', 'VWO code not loaded');
+            }
+            
+            // Set up periodic status checks
+            setInterval(() => {
+                if (window.VWO && window.VWO.data) {
+                    updateVWOStatus('success', 'VWO is running normally');
+                }
+            }, 5000);
+        });
+        
+        // Error handling
+        window.addEventListener('error', function(event) {
+            debugLog(`JavaScript Error: ${event.error.message}`, 'ERROR');
+        });
+        
+        // VWO specific error handling
+        window.addEventListener('vwo_error', function(event) {
+            debugLog(`VWO Error: ${event.detail}`, 'ERROR');
+            updateVWOStatus('error', 'VWO encountered an error');
+        });
+    </script>
+    
+    <!-- Fallback VWO loading (for testing without actual VWO account) -->
+    <script>
+        // Simulate VWO loading if not actually loaded
+        setTimeout(() => {
+            if (!window.VWO || !window.VWO.data) {
+                debugLog('VWO not detected, simulating for testing purposes', 'WARN');
+                
+                // Create mock VWO object
+                window.VWO = window.VWO || [];
+                window.VWO.data = { pc: {} };
+                window.VWO.visitor = { uuid: 'test-visitor-' + Math.random().toString(36).substr(2, 9) };
+                window.VWO.version = 'Mock Version 1.0';
+                
+                // Simulate variation application
+                setTimeout(() => {
+                    // Apply test variation
+                    const headline = document.getElementById('headline');
+                    const button = document.getElementById('cta-button');
+                    
+                    if (Math.random() > 0.5) {
+                        headline.textContent = 'Variant B Headline - Better Results!';
+                        headline.style.color = '#e74c3c';
+                        button.textContent = 'Variant B CTA - Click Now!';
+                        button.classList.add('variant-b');
+                        debugLog('Applied Variant B', 'INFO');
+                    } else {
+                        debugLog('Applied Variant A (Original)', 'INFO');
+                    }
+                    
+                    updateVWOStatus('success', 'Mock VWO loaded successfully');
+                    getVWOInfo();
+                }, 1000);
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protected Site - VWO Debugger Test</title>
+    
+    <!-- Strict Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'none'; frame-ancestors 'none';">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="no-referrer">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f44336;
+            color: white;
+            padding: 40px;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .warning-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #fff;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 20px;
+        }
+        
+        .shield {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+        }
+        
+        .protection-list {
+            text-align: left;
+            margin: 20px 0;
+        }
+        
+        .protection-list li {
+            margin: 10px 0;
+            padding: 5px 0;
+        }
+        
+        .test-button {
+            background: #fff;
+            color: #f44336;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        
+        .test-button:hover {
+            background: #ffebee;
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="warning-box">
+        <div class="shield">🛡️</div>
+        <h1>PROTECTED WEBSITE</h1>
+        <p>This website simulates a highly protected environment that would typically block server-side VWO debuggers.</p>
+        
+        <div class="protection-list">
+            <h3>🔒 Active Protection Mechanisms:</h3>
+            <ul>
+                <li>✅ Strict Content Security Policy (CSP)</li>
+                <li>✅ X-Frame-Options: DENY</li>
+                <li>✅ X-Content-Type-Options: nosniff</li>
+                <li>✅ Referrer-Policy: no-referrer</li>
+                <li>✅ CORS restrictions</li>
+                <li>✅ External script blocking</li>
+                <li>✅ Network connection restrictions</li>
+            </ul>
+        </div>
+        
+        <p><strong>Challenge:</strong> Try to debug VWO on this page using your client-side debugger!</p>
+        
+        <button class="test-button" onclick="testVWOAccess()">Test VWO Access</button>
+        <button class="test-button" onclick="simulateNetworkBlock()">Simulate Network Block</button>
+        <button class="test-button" onclick="testCSPViolation()">Test CSP Violation</button>
+        
+        <div class="status" id="status">
+            Status: Waiting for tests...
+        </div>
+    </div>
+    
+    <!-- VWO Test Element -->
+    <div id="vwo-test-element" style="display: none;">
+        <h2>VWO Test Element</h2>
+        <p>If you can see this, VWO bypassed the protection!</p>
+    </div>
+    
+    <script>
+        // Simulate protection mechanisms
+        function updateStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            status.innerHTML = `[${timestamp}] ${message}`;
+            status.style.color = isError ? '#ffcdd2' : '#c8e6c9';
+            console.log(`[PROTECTED SITE] ${message}`);
+        }
+        
+        function testVWOAccess() {
+            updateStatus('Testing VWO access...');
+            
+            // Try to detect VWO
+            setTimeout(() => {
+                if (window.VWO) {
+                    updateStatus('⚠️ VWO detected! Client-side debugger bypassed protection!');
+                    document.getElementById('vwo-test-element').style.display = 'block';
+                } else {
+                    updateStatus('✅ VWO blocked by protection mechanisms', true);
+                }
+            }, 1000);
+        }
+        
+        function simulateNetworkBlock() {
+            updateStatus('Simulating network block...');
+            
+            // Simulate blocked network request
+            fetch('https://dev.visualwebsiteoptimizer.com/j.php')
+                .then(() => {
+                    updateStatus('⚠️ Network request succeeded - protection bypassed!');
+                })
+                .catch(error => {
+                    updateStatus('✅ Network request blocked: ' + error.message, true);
+                });
+        }
+        
+        function testCSPViolation() {
+            updateStatus('Testing CSP violation...');
+            
+            try {
+                // This should be blocked by CSP
+                const script = document.createElement('script');
+                script.src = 'https://dev.visualwebsiteoptimizer.com/j.php';
+                document.head.appendChild(script);
+                
+                script.onload = () => {
+                    updateStatus('⚠️ External script loaded - CSP bypassed!');
+                };
+                
+                script.onerror = () => {
+                    updateStatus('✅ External script blocked by CSP', true);
+                };
+            } catch (error) {
+                updateStatus('✅ Script injection blocked: ' + error.message, true);
+            }
+        }
+        
+        // Block common VWO domains
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            const url = args[0];
+            if (typeof url === 'string' && (
+                url.includes('visualwebsiteoptimizer.com') || 
+                url.includes('vwo.com')
+            )) {
+                updateStatus('🚫 Blocked VWO network request: ' + url, true);
+                return Promise.reject(new Error('Network request blocked by protection'));
+            }
+            return originalFetch.apply(this, args);
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Protected site loaded - all security measures active');
+            
+            // Simulate periodic security checks
+            setInterval(() => {
+                if (window.VWO) {
+                    updateStatus('🚨 ALERT: VWO detected on protected site!');
+                }
+            }, 5000);
+        });
+        
+        // Block eval and similar functions
+        window.eval = function() {
+            updateStatus('🚫 eval() blocked by security policy', true);
+            throw new Error('eval() is not allowed');
+        };
+        
+        // Monitor for script injections
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.tagName === 'SCRIPT') {
+                        updateStatus('🚨 Script injection detected: ' + (node.src || 'inline script'));
+                    }
+                });
+            });
+        });
+        
+        observer.observe(document.head, { childList: true });
+        observer.observe(document.body, { childList: true, subtree: true });
+    </script>
+</body>
+</html>
