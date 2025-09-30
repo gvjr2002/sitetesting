@@ -253,40 +253,10 @@ f=!1,v=d.querySelector('#vwoCode'),cc={};try{var e=JSON.parse(localStorage.getIt
     </div>
 
    
-        // Simulate VWO loading if not actually loaded
-        setTimeout(() => {
-            if (!window.VWO || !window.VWO.data) {
-                debugLog('VWO not detected, simulating for testing purposes', 'WARN');
-                
-                // Create mock VWO object
-                window.VWO = window.VWO || [];
-                window.VWO.data = { pc: {} };
-                window.VWO.visitor = { uuid: 'test-visitor-' + Math.random().toString(36).substr(2, 9) };
-                window.VWO.version = 'Mock Version 1.0';
-                
-                // Simulate variation application
-                setTimeout(() => {
-                    // Apply test variation
-                    const headline = document.getElementById('headline');
-                    const button = document.getElementById('cta-button');
-                    
-                    if (Math.random() > 0.5) {
-                        headline.textContent = 'Variant B Headline - Better Results!';
-                        headline.style.color = '#e74c3c';
-                        button.textContent = 'Variant B CTA - Click Now!';
-                        button.classList.add('variant-b');
-                        debugLog('Applied Variant B', 'INFO');
-                    } else {
-                        debugLog('Applied Variant A (Original)', 'INFO');
-                    }
-                    
-                    updateVWOStatus('success', 'Mock VWO loaded successfully');
-                    getVWOInfo();
-                }, 1000);
-            }
-        }, 3000);
+      
     </script>
 </body>
 </html>
+
 
 
